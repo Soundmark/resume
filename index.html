@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历编辑器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>
+            <span>📝</span>
+            简历编辑器
+        </h1>
+        <div class="header-actions">
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+            <button class="btn" data-action="import-json">
+                <span>📂</span> 导入JSON
+            </button>
+            <button class="btn" data-action="export-json">
+                <span>💾</span> 导出JSON
+            </button>
+            <button class="btn btn-primary" data-action="export-pdf">
+                <span>📄</span> 导出PDF
+            </button>
+            <button class="btn btn-ai" data-action="ai-optimize">
+                <span>✨</span> AI 优化
+            </button>
+            <button class="btn-icon" data-action="show-ai-settings" title="AI 设置">⚙️</button>
+            <button class="btn btn-danger" data-action="clear-all">
+                <span>🗑️</span> 清空
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <!-- Basic Info -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">👤</span>
+                    基础信息
+                </h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input type="text" id="basic-name" data-field="name" placeholder="请输入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>职位/头衔</label>
+                        <input type="text" id="basic-title" data-field="title" placeholder="如：前端工程师">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>电话</label>
+                        <input type="text" id="basic-phone" data-field="phone" placeholder="138-xxxx-xxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" id="basic-email" data-field="email" placeholder="example@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>所在地</label>
+                    <input type="text" id="basic-location" data-field="location" placeholder="如：北京市朝阳区">
+                </div>
+                <div class="form-group">
+                    <label>个人简介</label>
+                    <textarea id="basic-summary" data-field="summary" rows="4" placeholder="简要介绍自己..."></textarea>
+                </div>
+            </div>
+
+            <!-- Work Experience -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">💼</span>
+                    工作经历
+                </h2>
+                <div id="experience-container"></div>
+                <button class="btn-add" data-action="add-experience">
+                    <span>+</span> 添加工作经历
+                </button>
+            </div>
+
+            <!-- Education -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🎓</span>
+                    教育经历
+                </h2>
+                <div id="education-container"></div>
+                <button class="btn-add" data-action="add-education">
+                    <span>+</span> 添加教育经历
+                </button>
+            </div>
+
+            <!-- Projects -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">📁</span>
+                    项目经历
+                </h2>
+                <div id="projects-container"></div>
+                <button class="btn-add" data-action="add-project">
+                    <span>+</span> 添加项目经历
+                </button>
+            </div>
+
+            <!-- Skills -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🎯</span>
+                    技能
+                </h2>
+                <div class="tags-container" id="skills-container"></div>
+                <input type="text" class="tag-input" id="skill-input" placeholder="输入技能按回车添加...">
+            </div>
+
+            <!-- Certifications -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon">🏆</span>
+                    证书/奖项
+                </h2>
+                <div class="tags-container" id="certifications-container"></div>
+                <input type="text" class="tag-input" id="cert-input" placeholder="输入证书按回车添加...">
+            </div>
+
+            <!-- Custom Sections -->
+            <div id="custom-sections-container"></div>
+
+            <!-- Add Custom Section Button -->
+            <button class="btn-add" data-action="show-custom-dialog" style="margin-top: 1rem;">
+                <span>+</span> 添加自定义区块
+            </button>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="preview-container" id="resume-preview">
+                <!-- Preview content will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Section Dialog -->
+    <div class="dialog-overlay" id="custom-section-dialog">
+        <div class="dialog">
+            <h3 class="dialog-title">添加自定义区块</h3>
+            <div class="form-group">
+                <label>区块名称</label>
+                <input type="text" id="custom-section-name" placeholder="如：语言能力、志愿者经历">
+            </div>
+            <div class="dialog-actions">
+                <button class="btn" data-action="cancel-dialog">取消</button>
+                <button class="btn btn-primary" data-action="confirm-dialog">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loading-text">正在生成PDF...</p>
+    </div>
+
+    <!-- AI Settings Dialog -->
+    <div class="dialog-overlay" id="ai-settings-dialog">
+        <div class="dialog ai-settings-dialog">
+            <h3 class="dialog-title">AI 服务配置</h3>
+            <div class="form-group">
+                <label>API 格式</label>
+                <select id="ai-format">
+                    <option value="openai">OpenAI 兼容 (OpenAI / DeepSeek / 本地模型等)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>API 地址</label>
+                <input type="text" id="ai-endpoint" placeholder="https://api.openai.com/v1">
+                <div class="form-hint" id="ai-endpoint-hint">填入对应服务的 API 地址</div>
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <div class="ai-key-row">
+                    <input type="password" id="ai-apikey" placeholder="sk-...">
+                    <button class="btn btn-sm" data-action="toggle-apikey" type="button">显示</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>模型名称</label>
+                <input type="text" id="ai-model" placeholder="gpt-4o">
+            </div>
+            <div class="dialog-actions">
+                <button class="btn" data-action="cancel-ai-settings">取消</button>
+                <button class="btn btn-primary" data-action="save-ai-settings">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI JD Input Dialog -->
+    <div class="dialog-overlay" id="ai-jd-dialog">
+        <div class="dialog ai-jd-dialog">
+            <h3 class="dialog-title">🎯 岗位定制优化</h3>
+            <div class="form-group">
+                <label>目标岗位描述 (JD)</label>
+                <textarea id="ai-jd-input" rows="10" placeholder="粘贴目标岗位的完整描述..."></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn" data-action="cancel-jd-dialog">取消</button>
+                <button class="btn btn-primary" data-action="confirm-jd-dialog">开始优化</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Result Dialog -->
+    <div class="dialog-overlay" id="ai-result-dialog">
+        <div class="dialog ai-result-dialog">
+            <h3 class="dialog-title" id="ai-result-title">✨ AI 优化</h3>
+            <div class="ai-result-menu" id="ai-result-menu">
+                <button class="btn btn-ai-option" data-action="ai-choose-polish">
+                    <span>📝</span>
+                    <div>
+                        <div class="ai-option-title">一键润色</div>
+                        <div class="ai-option-desc">使用 STAR 法则优化所有描述，让表达更专业</div>
+                    </div>
+                </button>
+                <button class="btn btn-ai-option" data-action="ai-choose-jd">
+                    <span>🎯</span>
+                    <div>
+                        <div class="ai-option-title">岗位定制</div>
+                        <div class="ai-option-desc">粘贴目标岗位 JD，AI 针对性优化简历</div>
+                    </div>
+                </button>
+            </div>
+            <div class="ai-result-summary" id="ai-result-summary"></div>
+            <div class="ai-result-list" id="ai-result-list"></div>
+            <div class="dialog-actions" id="ai-result-actions" style="display:none;">
+                <button class="btn" data-action="ai-ignore-all">全部忽略</button>
+                <button class="btn btn-primary" data-action="ai-accept-all">全部采纳</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="save-indicator">已自动保存</div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
