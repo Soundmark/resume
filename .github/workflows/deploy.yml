@@ -24,6 +24,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache busting
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          sed -i "s|href=\"css/styles.css\"|href=\"css/styles.css?v=${SHORT_SHA}\"|g" index.html resume-editor.html
+          sed -i "s|src=\"js/app.js\"|src=\"js/app.js?v=${SHORT_SHA}\"|g" index.html resume-editor.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
