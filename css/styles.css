@@ -373,9 +373,11 @@ body {
 .preview-page {
     background: white;
     width: 210mm;
-    min-height: 257mm;
+    height: 297mm;
     padding: 20mm;
     box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    position: relative;
 }
 .preview-page + .preview-page {
     box-shadow: var(--shadow-lg), 0 -0.5rem 1rem rgba(0,0,0,0.05);
@@ -444,7 +446,46 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+/* 第一个 header（紧跟 section-title 后）不需要额外间距 */
+.resume-section-title + .resume-item-header {
+    margin-top: 0;
+}
+
+.resume-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+/* 平铺后的段落样式 */
+.resume-item-header + p {
+    margin-top: 0.25rem;
+}
+
+/* 平铺后的通用列表样式（排除已定义样式的 .resume-list） */
+.preview-page ul:not(.resume-list),
+.preview-page ol:not(.resume-list) {
+    list-style: none;
+    padding-left: 1.25rem;
+    margin: 0.25rem 0;
+}
+
+.preview-page ul:not(.resume-list) > li,
+.preview-page ol:not(.resume-list) > li {
+    position: relative;
+    margin-bottom: 0.125rem;
+}
+
+.preview-page ul:not(.resume-list) > li::before,
+.preview-page ol:not(.resume-list) > li::before {
+    content: "\2022";
+    position: absolute;
+    left: -1rem;
+    color: var(--primary);
 }
 
 .resume-item-title {
@@ -467,7 +508,13 @@ body {
     color: var(--text);
     font-size: 0.9375rem;
     margin-top: 0.25rem;
+    margin-bottom: 0.875rem;
     line-height: 1.6;
+}
+.resume-item-url {
+    font-size: 0.875rem;
+    color: var(--primary);
+    margin-top: 0.25rem;
 }
 .resume-item-description ul,
 .resume-item-description ol {
